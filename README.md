@@ -12,10 +12,10 @@ You can run this tool directly using `uvx` (requires `uv` installed):
 
 ```bash
 # General usage
-uvx --from git+https://github.com/laiso/site2skill site2skill <URL> <SKILL_NAME>
+uvx --from git+https://github.com/ayatoy/site2skill site2skill <URL> <SKILL_NAME>
 
 # Example: Create a skill for PAY.JP
-uvx --from git+https://github.com/laiso/site2skill site2skill https://docs.pay.jp/v1/ payjp
+uvx --from git+https://github.com/ayatoy/site2skill site2skill https://docs.pay.jp/v1/ payjp
 ```
 
 ### CLI Options
