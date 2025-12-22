@@ -21,6 +21,7 @@ def generate_skill_structure(
     output_base: str = ".claude/skills",
     skill_description: Optional[str] = None,
     full_sync: bool = False,
+    replace_skill_md: bool = False,
 ) -> None:
     """
     Generate the Skill structure following SKILL.md + docs/ pattern.
@@ -49,7 +50,7 @@ def generate_skill_structure(
 
     # Create SKILL.md
     skill_md_path = os.path.join(skill_dir, "SKILL.md")
-    if not os.path.exists(skill_md_path):
+    if replace_skill_md or not os.path.exists(skill_md_path):
         description = skill_description or f"{skill_name.upper()} documentation assistant"
         with open(skill_md_path, "w", encoding="utf-8") as f:
             f.write(f"""---
@@ -159,6 +160,11 @@ if __name__ == "__main__":
         action="store_true",
         help="Replace docs/ contents by deleting existing docs before copying.",
     )
+    parser.add_argument(
+        "--replace-skill-md",
+        action="store_true",
+        help="Overwrite SKILL.md even if it already exists.",
+    )
 
     args = parser.parse_args()
 
@@ -168,4 +174,5 @@ if __name__ == "__main__":
         args.output,
         args.skill_description,
         args.full_sync,
+        args.replace_skill_md,
     )

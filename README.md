@@ -30,6 +30,7 @@ Options:
   --skip-fetch       Skip the download step (use existing files in temp dir)
   --clean            Clean up temporary directory after completion
   --full-sync        Replace docs/ contents by deleting existing docs before copying
+  --replace-skill-md Overwrite SKILL.md even if it already exists
 ```
 
 ### Requirements

@@ -46,6 +46,11 @@ def main():
         action="store_true",
         help="Replace docs/ contents by deleting existing docs before copying.",
     )
+    parser.add_argument(
+        "--replace-skill-md",
+        action="store_true",
+        help="Overwrite SKILL.md even if it already exists.",
+    )
     
     args = parser.parse_args()
     
@@ -129,6 +134,7 @@ def main():
             args.output,
             args.skill_description,
             args.full_sync,
+            args.replace_skill_md,
         )
         
         skill_dir = os.path.join(args.output, args.skill_name)
