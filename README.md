@@ -1,5 +1,8 @@
 # site2skill
 
+> [!NOTE]
+> This repository is a fork of https://github.com/laiso/site2skill with additional features. Many thanks to the original project.
+
 **Turn any documentation website into a Claude Agent Skill.**
 
 `site2skill` is a tool that scrapes a documentation website, converts it to Markdown, and packages it as a Claude [Agent Skill](https://www.anthropic.com/news/skills) (ZIP format) with a proper `SKILL.md` entry point.
