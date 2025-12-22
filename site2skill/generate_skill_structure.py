@@ -76,6 +76,10 @@ Options:
 - `--json` - Output as JSON
 - `--max-results N` - Limit results (default: 10)
 
+## Query Building
+
+`"<query>"` is the user's question or topic to search for in the documentation. Before passing a user’s inquiry directly into `"<query>"`, extract all key topics from the inquiry, represent each topic in the user's native language together with its English translation (side by side), join the resulting terms with spaces, and pass that result into `"<query>"`.
+
 ## Usage
 
 1. Search or read files in `docs/` for relevant information
