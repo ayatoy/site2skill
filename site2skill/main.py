@@ -27,6 +27,14 @@ def main():
     parser = argparse.ArgumentParser(description="Web Docs to Claude Code Skill Pipeline")
     parser.add_argument("url", help="URL of the documentation site")
     parser.add_argument("skill_name", help="Name of the skill (e.g., payjp)")
+    parser.add_argument(
+        "skill_description",
+        nargs="?",
+        help=(
+            "Optional description to replace the default "
+            f"'{'{'}skill_name.upper(){'}'} documentation assistant'"
+        ),
+    )
     parser.add_argument("--output", "-o", default=".claude/skills", help="Base output directory for skill structure")
     parser.add_argument("--skill-output", default=".", help="Output directory for .skill file")
     parser.add_argument("--temp-dir", default="build", help="Temporary directory for processing")
@@ -110,7 +118,12 @@ def main():
             normalize_markdown(md_file, md_file)
             
         logger.info(f"=== Step 4: Generating Skill Structure ===")
-        generate_skill_structure(args.skill_name, temp_md_dir, args.output)
+        generate_skill_structure(
+            args.skill_name,
+            temp_md_dir,
+            args.output,
+            args.skill_description,
+        )
         
         skill_dir = os.path.join(args.output, args.skill_name)
         

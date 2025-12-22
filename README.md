@@ -21,7 +21,7 @@ uvx --from git+https://github.com/laiso/site2skill site2skill https://docs.pay.j
 ### CLI Options
 
 ```
-site2skill <URL> <SKILL_NAME> [options]
+site2skill <URL> <SKILL_NAME> [SKILL_DESCRIPTION] [options]
 
 Options:
   --output, -o       Base output directory for skill structure (default: .claude/skills)

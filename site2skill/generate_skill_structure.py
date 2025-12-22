@@ -15,7 +15,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-def generate_skill_structure(skill_name: str, source_dir: Optional[str], output_base: str = ".claude/skills") -> None:
+def generate_skill_structure(
+    skill_name: str,
+    source_dir: Optional[str],
+    output_base: str = ".claude/skills",
+    skill_description: Optional[str] = None,
+) -> None:
     """
     Generate the Skill structure following SKILL.md + docs/ pattern.
     Structure:
@@ -42,10 +47,11 @@ def generate_skill_structure(skill_name: str, source_dir: Optional[str], output_
     # Create SKILL.md
     skill_md_path = os.path.join(skill_dir, "SKILL.md")
     if not os.path.exists(skill_md_path):
+        description = skill_description or f"{skill_name.upper()} documentation assistant"
         with open(skill_md_path, "w", encoding="utf-8") as f:
             f.write(f"""---
 name: {skill_name}
-description: {skill_name.upper()} documentation assistant
+description: {description}
 ---
 
 # {skill_name.upper()} Skill
@@ -135,9 +141,22 @@ Options:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate Skill Structure.")
     parser.add_argument("skill_name", help="Name of the skill (e.g., payjp)")
+    parser.add_argument(
+        "skill_description",
+        nargs="?",
+        help=(
+            "Optional description to replace the default "
+            f"'{'{'}skill_name.upper(){'}'} documentation assistant'"
+        ),
+    )
     parser.add_argument("--source", "-s", help="Source directory containing Markdown files")
     parser.add_argument("--output", "-o", default=".claude/skills", help="Base output directory")
 
     args = parser.parse_args()
 
-    generate_skill_structure(args.skill_name, args.source, args.output)
+    generate_skill_structure(
+        args.skill_name,
+        args.source,
+        args.output,
+        args.skill_description,
+    )
