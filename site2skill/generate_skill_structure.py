@@ -20,6 +20,7 @@ def generate_skill_structure(
     source_dir: Optional[str],
     output_base: str = ".claude/skills",
     skill_description: Optional[str] = None,
+    full_sync: bool = False,
 ) -> None:
     """
     Generate the Skill structure following SKILL.md + docs/ pattern.
@@ -41,6 +42,8 @@ def generate_skill_structure(
     else:
         os.makedirs(skill_dir)
 
+    if full_sync and os.path.exists(docs_dir):
+        shutil.rmtree(docs_dir)
     os.makedirs(docs_dir, exist_ok=True)
     os.makedirs(scripts_dir, exist_ok=True)
 
@@ -151,6 +154,11 @@ if __name__ == "__main__":
     )
     parser.add_argument("--source", "-s", help="Source directory containing Markdown files")
     parser.add_argument("--output", "-o", default=".claude/skills", help="Base output directory")
+    parser.add_argument(
+        "--full-sync",
+        action="store_true",
+        help="Replace docs/ contents by deleting existing docs before copying.",
+    )
 
     args = parser.parse_args()
 
@@ -159,4 +167,5 @@ if __name__ == "__main__":
         args.source,
         args.output,
         args.skill_description,
+        args.full_sync,
     )

@@ -41,6 +41,11 @@ def main():
     
     parser.add_argument("--skip-fetch", action="store_true", help="Skip the download step (use existing files in temp dir)")
     parser.add_argument("--clean", action="store_true", help="Clean up temporary directory after completion")
+    parser.add_argument(
+        "--full-sync",
+        action="store_true",
+        help="Replace docs/ contents by deleting existing docs before copying.",
+    )
     
     args = parser.parse_args()
     
@@ -123,6 +128,7 @@ def main():
             temp_md_dir,
             args.output,
             args.skill_description,
+            args.full_sync,
         )
         
         skill_dir = os.path.join(args.output, args.skill_name)

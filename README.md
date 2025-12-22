@@ -29,6 +29,7 @@ Options:
   --temp-dir         Temporary directory for processing (default: build)
   --skip-fetch       Skip the download step (use existing files in temp dir)
   --clean            Clean up temporary directory after completion
+  --full-sync        Replace docs/ contents by deleting existing docs before copying
 ```
 
 ### Requirements
