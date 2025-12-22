@@ -38,6 +38,7 @@ def main():
     parser.add_argument("--output", "-o", default=".claude/skills", help="Base output directory for skill structure")
     parser.add_argument("--skill-output", default=".", help="Output directory for .skill file")
     parser.add_argument("--temp-dir", default="build", help="Temporary directory for processing")
+    parser.add_argument("--skip-package", action="store_true", help="Skip packaging into a .skill file")
     
     parser.add_argument("--skip-fetch", action="store_true", help="Skip the download step (use existing files in temp dir)")
     parser.add_argument("--clean", action="store_true", help="Clean up temporary directory after completion")
@@ -146,12 +147,17 @@ def main():
         
         # Note: check_skill_size is now called inside validate_skill
         
-        logger.info(f"=== Step 6: Packaging Skill ===")
-        skill_file = package_skill(skill_dir, args.skill_output)
+        skill_file = None
+        if args.skip_package:
+            logger.info("=== Step 6: Skipping Packaging Skill ===")
+        else:
+            logger.info(f"=== Step 6: Packaging Skill ===")
+            skill_file = package_skill(skill_dir, args.skill_output)
 
         logger.info(f"=== Done! ===")
         logger.info(f"Skill directory: {skill_dir}")
-        logger.info(f"Skill package: {skill_file}")
+        if skill_file:
+            logger.info(f"Skill package: {skill_file}")
         
         # Cleanup
         if args.clean:

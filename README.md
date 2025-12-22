@@ -26,6 +26,7 @@ site2skill <URL> <SKILL_NAME> [SKILL_DESCRIPTION] [options]
 Options:
   --output, -o       Base output directory for skill structure (default: .claude/skills)
   --skill-output     Output directory for .skill file (default: .)
+  --skip-package     Skip packaging into a .skill file
   --temp-dir         Temporary directory for processing (default: build)
   --skip-fetch       Skip the download step (use existing files in temp dir)
   --clean            Clean up temporary directory after completion
