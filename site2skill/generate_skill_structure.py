@@ -21,7 +21,7 @@ def generate_skill_structure(skill_name: str, source_dir: Optional[str], output_
     Structure:
       <skill-name>/
         SKILL.md         # Entry point, usage instructions
-        docs/            # Documentation files (flat)
+        docs/            # Documentation files
         scripts/         # (Optional) Executable code
     """
     skill_dir = os.path.join(output_base, skill_name)
@@ -103,7 +103,7 @@ Options:
     except Exception as e:
         logger.warning(f"Failed to copy templates: {e}")
 
-    # Copy Markdown files (flat, no categorization)
+    # Copy Markdown files (preserve source structure)
     if source_dir and os.path.exists(source_dir):
         logger.info(f"Copying files from {source_dir}...")
         file_count = 0
@@ -112,16 +112,18 @@ Options:
             for file in files:
                 if file.endswith(".md"):
                     src_path = os.path.join(root, file)
-                    dst_path = os.path.join(docs_dir, file)
+                    rel_path = os.path.relpath(src_path, source_dir)
+                    dst_path = os.path.join(docs_dir, rel_path)
 
                     # Security check: Ensure dst_path is strictly within docs_dir
                     abs_dst_path = os.path.abspath(dst_path)
                     abs_docs_dir = os.path.abspath(docs_dir)
 
                     if os.path.commonpath([abs_dst_path, abs_docs_dir]) != abs_docs_dir:
-                        logger.warning(f"Skipping potential path traversal file: {file}")
+                        logger.warning(f"Skipping potential path traversal file: {rel_path}")
                         continue
 
+                    os.makedirs(os.path.dirname(dst_path), exist_ok=True)
                     shutil.copy2(src_path, dst_path)
                     file_count += 1
 

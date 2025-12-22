@@ -3,7 +3,6 @@ import os
 import shutil
 import glob
 import datetime
-import re
 import logging
 from urllib.parse import urlparse
 
@@ -94,24 +93,18 @@ def main():
             rel_path_for_url = rel_path[:-5] if rel_path.endswith('.html') else rel_path
             source_url = f"{scheme}://{rel_path_for_url}"
             
-            # Determine output filename (flattened)
-            filename = os.path.basename(html_file)
-            name_without_ext = os.path.splitext(filename)[0]
-            
-            # Sanitize filename to avoid invalid characters in zip
-            # Replace non-alphanumeric characters (except ._-) with _
-            name_without_ext = re.sub(r'[^a-zA-Z0-9._-]', '_', name_without_ext)
-            
-            md_filename = name_without_ext + ".md"
-            md_path = os.path.join(temp_md_dir, md_filename)
-            
+            # Determine output path (preserve original structure)
+            # Replace .html with .md, keep subdirectories.
+            rel_md_path = rel_path[:-5] + ".md" if rel_path.endswith(".html") else rel_path + ".md"
+            md_path = os.path.join(temp_md_dir, rel_md_path)
+
             if os.path.exists(md_path):
-                logger.warning(f"Name collision for {md_filename}. Overwriting.")
-                
+                logger.warning(f"Path collision for {md_path}. Overwriting.")
+
             convert_html_to_md(html_file, md_path, source_url=source_url, fetched_at=fetched_at)
             
         logger.info(f"=== Step 3: Normalizing Markdown ===")
-        md_files = glob.glob(os.path.join(temp_md_dir, "*.md"))
+        md_files = glob.glob(os.path.join(temp_md_dir, "**/*.md"), recursive=True)
         for md_file in md_files:
             # Normalize in place
             normalize_markdown(md_file, md_file)
