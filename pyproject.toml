@@ -26,3 +26,12 @@ site2skill = ["templates/*"]
 
 [tool.uv]
 # No special uv settings needed yet
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "skills-ref; python_version >= '3.11'",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

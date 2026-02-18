@@ -5,7 +5,7 @@
 
 **Turn any documentation website into a Claude Agent Skill.**
 
-`site2skill` is a tool that scrapes a documentation website, converts it to Markdown, and packages it as a Claude [Agent Skill](https://www.anthropic.com/news/skills) (ZIP format) with a proper `SKILL.md` entry point.
+`site2skill` is a tool that scrapes a documentation website, converts it to Markdown, and generates a Claude [Agent Skill](https://www.anthropic.com/news/skills) structure with a proper `SKILL.md` entry point.
 
 Agent Skills are dynamically loaded knowledge modules that Claude uses on demand. They work across Claude Code, Claude apps, and the API.
 
@@ -27,13 +27,14 @@ uvx --from git+https://github.com/ayatoy/site2skill site2skill https://docs.pay.
 site2skill <URL> <SKILL_NAME> [SKILL_DESCRIPTION] [options]
 
 Options:
-  --output, -o       Base output directory for skill structure (default: .claude/skills)
+  --target           Target agent (claude|claude-desktop|cursor|gemini|codex). Sets default output directory
+  --output, -o       Base output directory for skill structure (overrides target default)
   --skill-output     Output directory for .skill file (default: .)
   --skip-package     Skip packaging into a .skill file
   --temp-dir         Temporary directory for processing (default: build)
   --skip-fetch       Skip the download step (use existing files in temp dir)
   --clean            Clean up temporary directory after completion
-  --full-sync        Replace docs/ contents by deleting existing docs before copying
+  --full-sync        Replace references/ (and legacy docs/) contents before copying
   --replace-skill-md Overwrite SKILL.md even if it already exists
 ```
 
@@ -51,21 +52,25 @@ Options:
 2.  **Convert**: Converts HTML pages to Markdown using `beautifulsoup4` and `markdownify`.
 3.  **Normalize**: Cleans up links and formatting.
 4.  **Validate**: Checks the skill structure and size limits.
-5.  **Package**: Generates `SKILL.md` and zips everything into a `.skill` file.
+5.  **Package**: For `--target claude-desktop`, creates a `.skill` archive unless `--skip-package` is set.
 
 ## Output
 
-The tool generates a skill directory in `.claude/skills/<skill_name>/` containing:
+The tool generates a skill directory in the target default path (or `--output`) containing:
 
 ```
 <skill_name>/
 ├── SKILL.md           # Entry point with usage instructions
-├── docs/              # Markdown documentation files
+├── references/        # Markdown documentation files (preferred)
 └── scripts/
     └── search_docs.py # Search tool for documentation
 ```
 
-Additionally, a `<skill_name>.skill` file (ZIP archive) is created in the current directory.
+Legacy note: older skills may use `docs/` instead of `references/`. The search tool and validator support both.
+
+A `<skill_name>.skill` file (ZIP archive) is created only when:
+- `--target claude-desktop`
+- `--skip-package` is not set
 
 ### Search Tool
 

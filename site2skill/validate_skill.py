@@ -10,20 +10,30 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
+def _get_docs_dir(skill_dir: str) -> str | None:
+    references_dir = os.path.join(skill_dir, "references")
+    if os.path.isdir(references_dir):
+        return references_dir
+    docs_dir = os.path.join(skill_dir, "docs")
+    if os.path.isdir(docs_dir):
+        return docs_dir
+    return None
+
+
 def check_skill_size(skill_dir: str) -> None:
     """
-    Checks the total size of the skill directory (specifically docs/).
+    Checks the total size of the skill directory (references/ preferred, fallback to docs/).
     Warns if it exceeds 8MB.
     Lists top 10 largest files.
     """
-    docs_dir = os.path.join(skill_dir, "docs")
-    if not os.path.exists(docs_dir):
+    content_dir = _get_docs_dir(skill_dir)
+    if not content_dir:
         return
 
     total_size = 0
     file_sizes: List[Tuple[int, str]] = []
 
-    for root, _, files in os.walk(docs_dir):
+    for root, _, files in os.walk(content_dir):
         for f in files:
             fp = os.path.join(root, f)
             try:
@@ -56,7 +66,7 @@ def check_skill_size(skill_dir: str) -> None:
 def validate_skill(skill_dir: str) -> bool:
     """
     Validates a skill directory structure and metadata.
-    Checks for SKILL.md + docs/ structure.
+    Checks for SKILL.md + references/ structure (fallback to docs/).
     """
     logger.info(f"Validating skill in: {skill_dir}")
 
@@ -95,22 +105,30 @@ def validate_skill(skill_dir: str) -> bool:
         except Exception as e:
             warnings.append(f"Could not validate SKILL.md: {e}")
 
-    # 3. Check docs/ directory
+    # 3. Check references/ directory (fallback to docs/)
+    references_dir = os.path.join(skill_dir, "references")
     docs_dir = os.path.join(skill_dir, "docs")
-    if not os.path.isdir(docs_dir):
-        errors.append("docs/ directory not found.")
+    if os.path.isdir(references_dir):
+        logger.info("Found references/")
+        content_dir = references_dir
+    elif os.path.isdir(docs_dir):
+        warnings.append("references/ not found, using legacy docs/ directory")
+        logger.info("Found docs/ (legacy)")
+        content_dir = docs_dir
     else:
-        logger.info("Found docs/")
+        errors.append("references/ directory not found (and no legacy docs/).")
+        content_dir = None
 
+    if content_dir:
         # Count markdown files
         md_files = []
-        for root, _, files in os.walk(docs_dir):
+        for root, _, files in os.walk(content_dir):
             for file in files:
                 if file.endswith('.md'):
                     md_files.append(os.path.join(root, file))
 
         if len(md_files) == 0:
-            warnings.append("docs/ directory is empty (no .md files)")
+            warnings.append(f"{os.path.basename(content_dir)}/ directory is empty (no .md files)")
         else:
             logger.info(f"  {len(md_files)} markdown files")
 

@@ -18,6 +18,7 @@ try:
     from .generate_skill_structure import generate_skill_structure
     from .validate_skill import validate_skill
     from .package_skill import package_skill
+    from .utils import sanitize_path, html_to_md_path
 except ImportError as e:
     logger.error(f"Could not import pipeline modules: {e}")
     logger.error("Make sure you have installed dependencies: pip install beautifulsoup4 markdownify pyyaml")
@@ -35,7 +36,18 @@ def main():
             f"'{'{'}skill_name.upper(){'}'} documentation assistant'"
         ),
     )
-    parser.add_argument("--output", "-o", default=".claude/skills", help="Base output directory for skill structure")
+    parser.add_argument(
+        "--target",
+        choices=["claude", "claude-desktop", "cursor", "gemini", "codex"],
+        default="claude",
+        help="Target agent (sets default output directory)",
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        default=None,
+        help="Base output directory for skill structure (overrides target default)",
+    )
     parser.add_argument("--skill-output", default=".", help="Output directory for .skill file")
     parser.add_argument("--temp-dir", default="build", help="Temporary directory for processing")
     parser.add_argument("--skip-package", action="store_true", help="Skip packaging into a .skill file")
@@ -45,7 +57,7 @@ def main():
     parser.add_argument(
         "--full-sync",
         action="store_true",
-        help="Replace docs/ contents by deleting existing docs before copying.",
+        help="Replace references/ (and legacy docs/) contents before copying.",
     )
     parser.add_argument(
         "--replace-skill-md",
@@ -57,6 +69,17 @@ def main():
     
     try:
         # 1. Setup Directories
+        output_base = args.output
+        if output_base is None:
+            target_output_map = {
+                "claude": ".claude/skills",
+                "claude-desktop": ".claude/skills",
+                "cursor": ".cursor/skills",
+                "gemini": ".gemini/skills",
+                "codex": ".codex/skills",
+            }
+            output_base = target_output_map[args.target]
+
         temp_download_dir = os.path.join(args.temp_dir, "download")
         temp_md_dir = os.path.join(args.temp_dir, "markdown")
         
@@ -112,13 +135,13 @@ def main():
             rel_path_for_url = rel_path[:-5] if rel_path.endswith('.html') else rel_path
             source_url = f"{scheme}://{rel_path_for_url}"
             
-            # Determine output path (preserve original structure)
-            # Replace .html with .md, keep subdirectories.
-            rel_md_path = rel_path[:-5] + ".md" if rel_path.endswith(".html") else rel_path + ".md"
+            # Determine output path (preserve original structure and sanitize components)
+            rel_md_path = html_to_md_path(rel_path)
+            rel_md_path = sanitize_path(rel_md_path)
             md_path = os.path.join(temp_md_dir, rel_md_path)
 
             if os.path.exists(md_path):
-                logger.warning(f"Path collision for {md_path}. Overwriting.")
+                logger.warning(f"Name collision for {rel_md_path}. Overwriting.")
 
             convert_html_to_md(html_file, md_path, source_url=source_url, fetched_at=fetched_at)
             
@@ -132,13 +155,14 @@ def main():
         generate_skill_structure(
             args.skill_name,
             temp_md_dir,
-            args.output,
+            output_base,
             args.skill_description,
             args.full_sync,
             args.replace_skill_md,
+            target_agent=args.target,
         )
         
-        skill_dir = os.path.join(args.output, args.skill_name)
+        skill_dir = os.path.join(output_base, args.skill_name)
         
         logger.info(f"=== Step 5: Validating Skill ===")
         if not validate_skill(skill_dir):
@@ -150,9 +174,11 @@ def main():
         skill_file = None
         if args.skip_package:
             logger.info("=== Step 6: Skipping Packaging Skill ===")
-        else:
+        elif args.target == "claude-desktop":
             logger.info(f"=== Step 6: Packaging Skill ===")
             skill_file = package_skill(skill_dir, args.skill_output)
+        else:
+            logger.info("=== Step 6: Packaging Skill (skipped for non-claude-desktop targets) ===")
 
         logger.info(f"=== Done! ===")
         logger.info(f"Skill directory: {skill_dir}")

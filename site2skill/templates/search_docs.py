@@ -2,7 +2,7 @@
 """
 search_docs.py - Full-text search tool for Claude Code Skills
 
-This script searches through the Markdown documentation files in the data/ directory.
+This script searches through the Markdown documentation files in the references/ directory.
 It provides context-aware results, extracting relevant snippets around matched terms.
 """
 
@@ -126,16 +126,21 @@ def search_docs(skill_dir: Path, query: str, max_results: int = 10) -> List[Dict
     Returns:
         List of result dictionaries
     """
+    references_dir = skill_dir / "references"
     docs_dir = skill_dir / "docs"
-    if not docs_dir.exists():
-        print(f"Error: {docs_dir} not found.")
+    if references_dir.exists():
+        content_dir = references_dir
+    elif docs_dir.exists():
+        content_dir = docs_dir
+    else:
+        print(f"Error: {references_dir} (or {docs_dir}) not found.")
         return []
 
     keywords = query.lower().split()
     results = []
 
-    # Walk through all markdown files in docs/
-    for file_path in docs_dir.glob("**/*.md"):
+    # Walk through all markdown files in references/ (fallback to docs/)
+    for file_path in content_dir.glob("**/*.md"):
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
